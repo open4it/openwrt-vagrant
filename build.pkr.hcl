@@ -13,20 +13,34 @@ variable "vm_name" {
   default = "openwrt"
 }
 
+variable "passwd" {
+  type    = string
+  sensitive = true
+  default = "vagrant"
+}
+
 locals {
-  boot_command = [
+  boot_command = concat([
     "<enter><wait>",
-    "passwd <<EOF<enter>vagrant<enter>vagrant<enter>EOF<enter>",
-    "uci set network.@device[0].ports=''<enter>",
+    "passwd <<EOF<enter>${var.passwd}<enter>${var.passwd}<enter>EOF<enter>",
     "uci set network.mng='interface'<enter>",
-    "uci set network.mng.ifname='eth0'<enter>",
-    "uci set network.mng.proto='dhcp'<enter>",
-    "uci commit<enter>",
-    "reload_config<enter>",
-    "fsync /etc/config/network<enter>",
-    "/etc/init.d/network restart<enter>",
-    "/etc/init.d/firewall restart<enter>"
-  ]
+    ],
+    element(split(".", regex_replace(var.vm_name, "^\\w+-", "")), 0) < 21 ?
+    [
+      "uci set network.lan.ifname='eth2'<enter>",
+      "uci set network.mng.ifname='eth0'<enter>",
+    ] : [
+      "uci set network.@device[0].ports='eth2'<enter>",
+      "uci set network.mng.device='eth0'<enter>",
+    ],
+    [
+      "uci set network.mng.proto='dhcp'<enter>",
+      "uci commit<enter>",
+      "reload_config<enter>",
+      "fsync /etc/config/network<enter>",
+      "/etc/init.d/network restart<enter>",
+      "/etc/init.d/firewall restart<enter>"
+  ])
 }
 
 source "qemu" "openwrt-libvirt" {
@@ -42,9 +56,9 @@ source "qemu" "openwrt-libvirt" {
   memory           = 128
   net_device       = "virtio-net"
   shutdown_command = "poweroff"
-  ssh_password     = "vagrant"
+  ssh_password     = var.passwd
   ssh_username     = "root"
-  ssh_wait_timeout = "300s"
+  ssh_wait_timeout = "120s"
   vm_name          = "${var.vm_name}"
 }
 
@@ -55,7 +69,7 @@ source "virtualbox-ovf" "openwrt-virtualbox" {
   headless             = true
   shutdown_command     = "poweroff"
   source_path          = "${var.build_dir}/${var.vm_name}.ovf"
-  ssh_password         = "vagrant"
+  ssh_password         = var.passwd
   ssh_username         = "root"
   ssh_wait_timeout     = "120s"
   vboxmanage = [
@@ -63,8 +77,6 @@ source "virtualbox-ovf" "openwrt-virtualbox" {
     ["modifyvm", "{{ .Name }}", "--boot1", "disk"],
     ["modifyvm", "{{ .Name }}", "--cpus", 1, "--memory", 128, "--vram", 16],
     ["modifyvm", "{{ .Name }}", "--nic1", "nat"],
-    ["modifyvm", "{{ .Name }}", "--nic2", "nat"],
-    ["modifyvm", "{{ .Name }}", "--nic3", "hostonly", "--hostonlyadapter3", "vboxnet0"],
     ["modifyvm", "{{ .Name }}", "--usb", "off"],
     ["modifyvm", "{{ .Name }}", "--usbxhci", "off"]
   ]
@@ -84,18 +96,7 @@ build {
 
   provisioner "shell" {
     expect_disconnect   = "true"
-    inline_shebang      = "/bin/ash -eux"
-    inline              = [
-
-      "uci set network.@device[0].ports='eth0'",
-      "uci set network.mng='interface'",
-      "uci set network.mng.ifname='eth2'",
-      "uci set network.mng.proto='dhcp'",
-      "uci commit",
-      "reload_config",
-      "fsync /etc/config/network",
-      "rm -f /etc/dropbear/dropbear_rsa_host_key",
-    ]
+    scripts             = ["scripts/packages.sh"]
     start_retry_timeout = "1m"
   }
 
