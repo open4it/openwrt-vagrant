@@ -102,5 +102,6 @@ build {
 
   post-processor "vagrant" {
     output               = "${var.output_dir}/${var.vm_name}-${source.type}.box"
+    vagrantfile_template = "vagrantfile.rb"
   }
 }
