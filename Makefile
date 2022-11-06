@@ -101,7 +101,7 @@ install-virtualbox: $(OUTPUT_DIR)/$(VM_NAME)-virtualbox-ovf.box ## Install Virtu
 .PHONY: shasums
 shasums: ## Print SHA sums
 	@echo ""
-	@shasum -a 512 $(OUTPUT_DIR)/*.box
+	@shasum -a 512 "$(OUTPUT_DIR)/$(VM_NAME)-*.box"
 
 .PHONY: help
 help: ## This help
