@@ -80,11 +80,6 @@ source "virtualbox-ovf" "openwrt-virtualbox" {
     ["modifyvm", "{{ .Name }}", "--usb", "off"],
     ["modifyvm", "{{ .Name }}", "--usbxhci", "off"]
   ]
-  vboxmanage_post = [
-    ["modifyvm", "{{ .Name }}", "--nic1", "null"],
-    ["modifyvm", "{{ .Name }}", "--nic2", "nat"],
-    ["modifyvm", "{{ .Name }}", "--nic3", "hostonly", "--hostonlyadapter3", "vboxnet0"],
-  ]
   vm_name = "${var.vm_name}"
 }
 
