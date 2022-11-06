@@ -7,7 +7,7 @@ DIRS = $(BUILD_DIR) $(OUTPUT_DIR)
 export PACKER_CACHE_DIR ?= $(BUILD_DIR)/packer_cache
 
 NAME ?= openwrt
-VERSION ?= 21.02.1
+VERSION ?= 22.03.2
 TIMESTAMP := $(shell date +%s)
 BOX_NAME ?= $(NAME)-$(VERSION)
 VM_NAME ?= $(NAME)-$(VERSION)
