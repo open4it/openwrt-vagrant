@@ -34,9 +34,11 @@ get: $(BUILD_DIR)/openwrt-$(VERSION).img ## Download image
 
 $(BUILD_DIR)/openwrt-$(VERSION).img:
 	mkdir -p $(@D)
-	wget -O "$(BUILD_DIR)/openwrt-$(VERSION).img.gz" "https://downloads.openwrt.org/releases/$(VERSION)/targets/x86/64/$(REMOTE_FILE)"
-	gzip -f -d "$(BUILD_DIR)/openwrt-$(VERSION).img.gz" || exit 0
-	touch -m "$(BUILD_DIR)/openwrt-$(VERSION).img"
+	if [ ! -f "$(BUILD_DIR)/openwrt-$(VERSION).img" ]; then \
+		wget -O "$(BUILD_DIR)/openwrt-$(VERSION).img.gz" "https://downloads.openwrt.org/releases/$(VERSION)/targets/x86/64/$(REMOTE_FILE)"; \
+  		gzip -f -d "$(BUILD_DIR)/openwrt-$(VERSION).img.gz" || exit 0; \
+  		touch -m "$(BUILD_DIR)/openwrt-$(VERSION).img"; \
+	fi
 
 .PHONY: vdi
 vdi: $(BUILD_DIR)/openwrt-$(VERSION).vdi ## Convert RAW disk image to VDI format
