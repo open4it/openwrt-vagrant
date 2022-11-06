@@ -94,6 +94,10 @@ clean:
 .PHONY: all
 all: build shasums ## Build all boxes and print SHA sums
 
+.PHONY: install-virtualbox
+install-virtualbox: $(OUTPUT_DIR)/$(VM_NAME)-virtualbox-ovf.box ## Install Virtualbox box
+	vagrant box add "$(VM_NAME)" "$(OUTPUT_DIR)/$(VM_NAME)-virtualbox-ovf.box" --force
+
 .PHONY: shasums
 shasums: ## Print SHA sums
 	@echo ""
