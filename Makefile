@@ -5,6 +5,7 @@ BUILD_DIR ?= $(ROOT_DIR)/build
 OUTPUT_DIR ?= $(ROOT_DIR)/output
 DIRS = $(BUILD_DIR) $(OUTPUT_DIR)
 export PACKER_CACHE_DIR ?= $(BUILD_DIR)/packer_cache
+TOKEN=""
 
 NAME ?= openwrt
 VERSION ?= 22.03.2
@@ -97,6 +98,15 @@ all: build shasums ## Build all boxes and print SHA sums
 .PHONY: install-virtualbox
 install-virtualbox: $(OUTPUT_DIR)/$(VM_NAME)-virtualbox-ovf.box ## Install Virtualbox box
 	vagrant box add "$(VM_NAME)" "$(OUTPUT_DIR)/$(VM_NAME)-virtualbox-ovf.box" --force
+
+publish:
+	vagrant cloud auth login --token "$TOKEN"
+	vagrant cloud publish "open4it/$VM_NAME" 1.0.0 virtualbox "output/$VM_NAME-virtualbox-ovf.box" \
+		--version-description "GitHub: [open4it/openwrt-vagrant](https://github.com/open4it/openwrt-vagrant)" \
+		--short-description "OpenWrt $VERSION" \
+		--no-private \
+		--force
+	vagrant cloud auth logout
 
 .PHONY: shasums
 shasums: ## Print SHA sums
