@@ -91,7 +91,7 @@ build {
 
   provisioner "shell" {
     expect_disconnect   = "true"
-    scripts             = ["scripts/packages.sh"]
+    scripts             = ["scripts/packages.sh", "scripts/vagrant_ssh.sh"]
     start_retry_timeout = "1m"
   }
 
